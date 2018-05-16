@@ -34,21 +34,10 @@ public class State
         int whichParticle = 0;
         energyInput = energyIn;
         groundState();
-        distribute(whichParticles);
+        //perturb();
     }
 
-    private void distribute(int[] which) {
-        switch (which.length){
-            case 0: {
-                //ERROR!
-            }
-            case 1:
-            {
-                perturb(which[0],energyInput);
-            }
-            case 2:
-        }
-    }
+    
 
 
     private void perturb(int whichParticle, int byWhatEnergy){
