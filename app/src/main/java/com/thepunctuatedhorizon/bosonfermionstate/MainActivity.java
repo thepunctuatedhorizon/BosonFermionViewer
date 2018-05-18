@@ -12,6 +12,11 @@ public class MainActivity extends AppCompatActivity {
         setContentView(R.layout.activity_main);
         TextView textView = (TextView) findViewById(R.id.txtBox);
 
+        try {
+            SetOfParticles particles = new SetOfParticles();
+        } catch (NotValidSetOfParticlesException ex) { ex.printStackTrace(); }
+
+
         //State state1 = new State(0,1,0,40, 10);
 
         //textView.setText(state1.toString());

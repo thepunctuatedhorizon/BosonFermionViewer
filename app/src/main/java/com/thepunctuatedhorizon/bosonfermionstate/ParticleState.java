@@ -3,8 +3,6 @@
  */
 package com.thepunctuatedhorizon.bosonfermionstate;
 
-import java.util.logging.*;
-
 /**
  * @author 209722
  *
@@ -15,13 +13,17 @@ public class ParticleState {
 	 * Variables
 	 */
 	private int maxParticleLevels;
+	
 	private int energyLevel;
+	private double energyIneV;
+	
 	private int whichParticle;
-	private int typeOfParticle;
+	private int typeOfParticle;  // 0=boson, 1 = fermion
 	private boolean validState= false;
 	
-	private final int MAX_LEVELS = 10;
+	protected static final int MAX_LEVELS = 10;
 	
+	@SuppressWarnings("unused")
 	private final String TAG = "Particle State";
 	
 	/**
@@ -32,7 +34,7 @@ public class ParticleState {
 		this.energyLevel = 0;
 		this.whichParticle = 0;
 		this.typeOfParticle = 0;
-		validState = false;
+		this.validState = false;
 	}
 	
 	public ParticleState(int maxL, int energyL, int whichP, int typeOfP) throws NotValidParticleException {
@@ -45,9 +47,8 @@ public class ParticleState {
 		if (energyL > this.maxParticleLevels) { throw new NotValidParticleException("Maximum situation energy levels exceeded."); }
 		if (energyL < 0) { throw new NotValidParticleException("Minimum levels breached");}
 		this.energyLevel = energyL;
+		this.energyIneV = ((double) this.energyLevel)/2;
 		
-		if (whichP > 1) { throw new NotValidParticleException("Wrong particle Number."); }
-		if (whichP < 0) { throw new NotValidParticleException("Wrong particle Number."); }
 		this.whichParticle = whichP;
 		
 		if (typeOfP > 1) { throw new NotValidParticleException("Wrong Particle Type."); }
@@ -56,11 +57,14 @@ public class ParticleState {
 		validState = true;		
 	}
 	
-public ParticleState(boolean inGroundState, int i, int typeOfP) throws NotValidParticleException {
-		
-		this.maxParticleLevels = MAX_LEVELS;
+	public ParticleState(boolean inGroundState, int i, int typeOfP, int max) throws NotValidParticleException {
+		if (!inGroundState) {
+			throw new NotValidParticleException("Wasn't created at the ground state!"); 
+		}
+		if (max < 1) { this.maxParticleLevels = MAX_LEVELS; } else { this.maxParticleLevels = max; }
 		
 		this.energyLevel = 0;
+		this.energyIneV = 0;
 		
 		this.whichParticle = i;
 		
@@ -125,17 +129,93 @@ public ParticleState(boolean inGroundState, int i, int typeOfP) throws NotValidP
 	
 	@Override
 	public String toString() {
-		String validOrNot = (this.validState) ? " valid" : " invalid";
+		
+		try {
+			checkIfValid();
+		} 
+		catch (NotValidParticleException ex) {
+			ex.printStackTrace();
+		}
+		
+		String groundStateOrNot = (this.energyLevel == 0) ? "is in the ground state, 0eV." : "has energy " + this.energyIneV +"eV";
+		String aboveGroundOrNot = (this.energyLevel == 0) ? "" : " above the ground state.";
+		String validOrNot = (this.validState) ? " valid" : "n invalid";
 		String retStr = "";
 		try {
 			retStr = "This " + getFullNameTypeOfParticle() + " is the " + 
-								getWhichParticle() + "th particle in the simulation. This particle has energy " +
-								((double)getEnergyLevel()/2) + "eV above the ground state." + "This particle is in a(n)" +
+								getWhichParticle() + "th particle in the simulation. This particle " + groundStateOrNot +
+								aboveGroundOrNot + " This particle is in a" +
 								validOrNot + " particle.";
 		} catch (NotValidParticleException e) {
 			e.printStackTrace();
-			
 		}
+		
 		return retStr;
+	}
+	
+	private void checkIfValid() throws NotValidParticleException {
+		if (this.maxParticleLevels > MAX_LEVELS) { 
+			validState = false;	
+			throw new NotValidParticleException("Maximum levels exceeded."); 
+		}
+		if (this.maxParticleLevels < 1) { 
+			validState = false;	
+			throw new NotValidParticleException("Minimum levels breached");
+		}
+		 
+		
+		if (this.energyLevel > MAX_LEVELS) { 
+			validState = false;	
+			throw new NotValidParticleException("Maximum energy levels exceeded."); 
+		}
+		if (this.energyLevel > this.maxParticleLevels) { 
+			
+			validState = false;	
+			throw new NotValidParticleException("Maximum situation energy levels exceeded."); 
+		}
+		if (this.energyLevel < 0) { 
+			validState = false;	
+			throw new NotValidParticleException("Minimum levels breached");
+		}
+		
+		
+		if (this.typeOfParticle > 1) { 
+			validState = false;	
+			throw new NotValidParticleException("Wrong Particle Type."); 
+		}
+		if (this.typeOfParticle < 0) { 
+			validState = false;	
+			throw new NotValidParticleException("Wrong Particle Type."); 
+		}
+		
+		validState = true;		
+	}
+	
+	public void perturb(int energyAddedToMe) throws NotAValidEnergyLevel, NotValidParticleException {
+		
+		checkIfValid();
+		
+		if (!validState) { 
+			throw new NotValidParticleException("This particle was not valid, cannot perturb"); 
+		}
+		
+		int newEnergyLvl = energyAddedToMe + energyLevel;
+		if (maxParticleLevels < (newEnergyLvl)) {
+			this.validState = false;
+			throw new NotAValidEnergyLevel("This particle was given more energy (" + ((double)(energyAddedToMe + energyLevel))/2 + "eV) than possible (" + ((double)maxParticleLevels)/2 + "eV).");
+		}
+		
+		if (newEnergyLvl < 0) {
+			this.validState = false;
+			throw new NotAValidEnergyLevel("This particle was given less energy (" + ((double)(energyAddedToMe + energyLevel))/2 + "eV) than possible (" + 0 + "eV - the ground state).");
+		}
+		
+		if (newEnergyLvl == energyLevel) {
+			//TODO: What to do when unchanged? What else is going on?
+		}
+		
+		this.energyLevel = newEnergyLvl;
+		this.energyIneV = ((double) this.energyLevel)/2;
+		
 	}
 }
