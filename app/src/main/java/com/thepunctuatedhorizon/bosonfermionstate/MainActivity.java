@@ -12,13 +12,58 @@ public class MainActivity extends AppCompatActivity {
         setContentView(R.layout.activity_main);
         TextView textView = (TextView) findViewById(R.id.txtBox);
 
+        String str = "";
+
         try {
-            SetOfParticles particles = new SetOfParticles();
-        } catch (NotValidSetOfParticlesException ex) { ex.printStackTrace(); }
+
+//			SetOfParticles particles = new SetOfParticles();
+//
+//			System.out.println(particles);
+//
+//			System.out.println("" + particles.getParticlesValidState());
+//
+//			particles.getParticle(0).perturb(1);
+//			particles.getParticle(1).perturb(2);
+//			particles.getParticle(2).perturb(10);
+//			//particles.getParticle(3).perturb(11);
+//
+//			particles.getParticle(4).perturb(1);
+//			particles.getParticle(4).perturb(-1);
+//			System.out.println(particles);
+
+            int totalParticlesForThisSystem = 3;
+            int totalEnergy = 3;
+            int MaxNumberOfEnergyLevels = 10; // We MIGHT need to not use this!
+            int particleType = 0;
+            Distributor distributor = new Distributor();
 
 
-        //State state1 = new State(0,1,0,40, 10);
+            try {
+                str = "" + distributor.combinations(70,2);
+            } catch (BadCombinationsException e) {
+                e.printStackTrace();
+                return;
+            }
 
-        //textView.setText(state1.toString());
+            int[][][] iPaths = distributor.distribute(totalEnergy, totalParticlesForThisSystem, MaxNumberOfEnergyLevels, particleType);
+
+            int[][] iPath = iPaths[0];
+            SystemPath path = new SystemPath(iPath);
+
+            SystemOfParticles systemOfParticles = new SystemOfParticles(true, MaxNumberOfEnergyLevels, particleType, path);
+
+            str += "\n" + systemOfParticles.getStateAsString();
+
+            str += "\n" + path.getPathTaken().toString();
+
+        }
+        catch (NotValidSetOfParticlesException e) {e.printStackTrace(); }
+        catch (NotAValidEnergyLevel s) {s.printStackTrace(); }
+        catch (NotValidParticleException e) { e.printStackTrace(); }
+        catch (BadPathException e) { e.printStackTrace(); }
+
+
+
+        textView.setText(str);
     }
 }
