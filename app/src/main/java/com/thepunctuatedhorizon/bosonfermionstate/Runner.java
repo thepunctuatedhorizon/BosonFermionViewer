@@ -1,8 +1,5 @@
 package com.thepunctuatedhorizon.bosonfermionstate;
 
-import java.util.ArrayList;
-import java.util.List;
-
 public class Runner {
 
 	public static void main(String[] args)  {
@@ -30,8 +27,11 @@ public class Runner {
             Distributor distributor = new Distributor();
 
             try {
-                System.out.println(distributor.combinations(70,1));
+                System.out.println(distributor.nCr(70,1));
             } catch (BadCombinationsException e) {
+                e.printStackTrace();
+                return;
+            } catch (TooLargeException e ) {
                 e.printStackTrace();
                 return;
             }

@@ -39,7 +39,7 @@ public class MainActivity extends AppCompatActivity {
 
 
             try {
-                str = "" + distributor.combinations(70,2);
+                str = "" + distributor.nCr(69,35);
             } catch (BadCombinationsException e) {
                 e.printStackTrace();
                 return;
@@ -61,6 +61,7 @@ public class MainActivity extends AppCompatActivity {
         catch (NotAValidEnergyLevel s) {s.printStackTrace(); }
         catch (NotValidParticleException e) { e.printStackTrace(); }
         catch (BadPathException e) { e.printStackTrace(); }
+        catch (TooLargeException e) { e.printStackTrace();}
 
 
 
